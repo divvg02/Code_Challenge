@@ -2,10 +2,10 @@ Q.5 -----Write an SQL query to count the number of applications received for eac
 "Jobs" table. Display the job title and the corresponding application count. Ensure that it lists all
 jobs, even if they have no applications.
 
------mysql> select job_title, count(application_id) as application_count
+-----mysql> select j.job_title, a.count(application_id) as application_count
     -> from jobs j
     -> left join applications a on j.job_id = a.job_id
-    -> group by job_title;
+    -> group by j.job_title;
 +----------------------+-------------------+
 | job_title            | application_count |
 +----------------------+-------------------+
@@ -155,11 +155,7 @@ mysql> SELECT j.job_id, j.job_title, j.salary, j.job_location
 
 Q.13 Retrieve a list of job applicants along with the companies they have applied to and the positions
 they have applied for.
-mysql> SELECT a.applicant_id,
-    ->        a.first_name,
-    ->        a.last_name,
-    ->        c.company_name,
-    ->        j.job_title
+mysql> SELECT a.applicant_id, a.first_name, a.last_name, c.company_name, j.job_title
     -> FROM applicants a
     -> JOIN applications ap ON a.applicant_id = ap.applicant_id
     -> JOIN jobs j ON ap.job_id = j.job_id
@@ -178,9 +174,7 @@ mysql> SELECT a.applicant_id,
 
 Q.14. Retrieve a list of companies along with the count of jobs they have posted, even if they have not
 received any applications.
-mysql> SELECT c.company_id,
-    ->        c.company_name,
-    ->        COUNT(j.job_id) AS job_count
+mysql> SELECT c.company_id, c.company_name, COUNT(j.job_id) AS job_count
     -> FROM companies c
     -> LEFT JOIN jobs j ON c.company_id = j.company_id
     -> GROUP BY c.company_id, c.company_name;
@@ -198,11 +192,7 @@ mysql> SELECT c.company_id,
 Q.15. -----List all applicants along with the companies and positions they have applied for, including those
 who have not applied.
 
-mysql> SELECT a.applicant_id,
-    ->        a.first_name,
-    ->        a.last_name,
-    ->        c.company_name,
-    ->        j.job_title
+mysql> SELECT a.applicant_id, a.first_name, a.last_name,  c.company_name, j.job_title
     -> FROM applicants a
     -> LEFT JOIN applications ap ON a.applicant_id = ap.applicant_id
     -> LEFT JOIN jobs j ON ap.job_id = j.job_id
@@ -237,10 +227,7 @@ mysql> SELECT DISTINCT c.company_id, c.company_name
 
 q.17 -----. Display a list of applicants with their names and a concatenated string of their city and state.
 
-mysql> SELECT applicant_id,
-    ->        first_name,
-    ->        last_name,
-    ->        CONCAT(city, ', ', state) AS location
+mysql> SELECT applicant_id,first_name, last_name, CONCAT(city, ', ', state) AS location
     -> FROM applicants;
 +--------------+------------+-----------+----------------------+
 | applicant_id | first_name | last_name | location             |
@@ -269,15 +256,11 @@ mysql> SELECT job_id, job_title, company_id, salary, job_location
 
 Q.19----Retrieve a list of applicants and the jobs they have applied for, including those who have not
 applied and jobs without applicants.
-mysql> SELECT a.applicant_id,
-    ->        a.first_name,
-    ->        a.last_name,
-    ->        j.job_id,
-    ->        j.job_title
+mysql> SELECT a.applicant_id,a.first_name, a.last_name,j.job_id,j.job_title
     -> FROM applicants a
-    -> LEFT JOIN applications ap ON a.applicant_id = ap.applicant_id
-    -> LEFT JOIN jobs j ON ap.job_id = j.job_id
-    -> LEFT JOIN companies c ON j.company_id = c.company_id
+    -> JOIN applications ap ON a.applicant_id = ap.applicant_id
+    -> JOIN jobs j ON ap.job_id = j.job_id
+    -> JOIN companies c ON j.company_id = c.company_id
     -> ORDER BY a.applicant_id, j.job_id;
 +--------------+------------+-----------+--------+----------------------+
 | applicant_id | first_name | last_name | job_id | job_title            |
@@ -288,17 +271,14 @@ mysql> SELECT a.applicant_id,
 |            4 | Suryakumar | Yadav     |      4 | System Administrator |
 |            5 | Jasprit    | Bumrah    |      5 | Full Stack Developer |
 +--------------+------------+-----------+--------+----------------------+
-5 rows in set (0.00 sec)
+5 rows in set (0.01 sec)
 
 
 Q.20----List all combinations of applicants and companies where the company is in a specific city and the
 applicant has more than 2 years of experience. For example: city=Chennai
 
 
-mysql> SELECT a.applicant_id,
-    ->        a.first_name,
-    ->        a.last_name,
-    ->        c.company_name
+mysql> SELECT a.applicant_id, a.first_name, a.last_name, c.company_name
     -> FROM applicants a
     -> JOIN applications ap ON a.applicant_id = ap.applicant_id
     -> JOIN jobs j ON ap.job_id = j.job_id
