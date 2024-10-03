@@ -1,0 +1,312 @@
+Q.5 -----Write an SQL query to count the number of applications received for each job listing in the
+"Jobs" table. Display the job title and the corresponding application count. Ensure that it lists all
+jobs, even if they have no applications.
+
+-----mysql> select job_title, count(application_id) as application_count
+    -> from jobs j
+    -> left join applications a on j.job_id = a.job_id
+    -> group by job_title;
++----------------------+-------------------+
+| job_title            | application_count |
++----------------------+-------------------+
+| Software Engineer    |                 1 |
+| Data Analyst         |                 1 |
+| Project Manager      |                 1 |
+| System Administrator |                 1 |
+| Full Stack Developer |                 1 |
+| Business Analyst     |                 0 |
+| Intern               |                 0 |
++----------------------+-------------------+
+7 rows in set (0.01 sec)
+
+
+Q. 6----Develop an SQL query that retrieves job listings from the "Jobs" table within a specified salary
+range. Allow parameters for the minimum and maximum salary values. Display the job title,
+company name, location, and salary for each matching job.
+
+mysql> select j.job_title, c.company_name, c.location, j.salary
+    -> from jobs j
+    -> join companies c on j.company_id = c.company_id
+    -> where j.salary between 0 and 70000;
++----------------------+---------------------------+-----------+----------+
+| job_title            | company_name              | location  | salary   |
++----------------------+---------------------------+-----------+----------+
+| Software Engineer    | Tata Consultancy services | Mumbai    | 60000.00 |
+| Data Analyst         | Infosys                   | Bengaluru | 50000.00 |
+| Project Manager      | Wipro                     | Bengaluru | 70000.00 |
+| System Administrator | HCL                       | Noida     | 20000.00 |
+| Full Stack Developer | Hexaware Technologies     | Chennai   | 25000.00 |
+| Business Analyst     | Infosys                   | Bengaluru | 65000.00 |
+| Intern               | Wipro                     | Bengaluru |     0.00 |
++----------------------+---------------------------+-----------+----------+
+7 rows in set (0.00 sec)
+
+Q.7.---Write an SQL query that retrieves the job application history for a specific applicant. Allow a
+parameter for the ApplicantID, and return a result set with the job titles, company names, and
+application dates for all the jobs the applicant has applied to
+
+-----mysql> select j.job_title, c.company_name, a.application_date
+    -> from applications a
+    -> join jobs j on a.job_id = j.job_id
+    -> join companies c on j.company_id = c.company_id
+    -> where a.applicant_id = 2;
++--------------+--------------+---------------------+
+| job_title    | company_name | application_date    |
++--------------+--------------+---------------------+
+| Data Analyst | Infosys      | 2024-09-11 00:00:00 |
++--------------+--------------+---------------------+
+1 row in set (0.00 sec)
+
+
+
+Q.8 -----Create an SQL query that calculates and displays the average salary offered by all companies for
+job listings in the "Jobs" table. Ensure that the query filters out jobs with a salary of zero.
+
+mysql> select avg(salary) from jobs
+    -> where salary > 0;
++--------------+
+| avg(salary)  |
++--------------+
+| 48333.333333 |
++--------------+
+1 row in set (0.00 sec)
+
+
+
+
+
+
+Q.9 -----Write an SQL query to identify the company that has posted the most job listings. Display the
+company name along with the count of job listings they have posted. Handle ties if multiple
+companies have the same maximum count.
+
+mysql> select c.company_name, count(j.job_id) as job_count
+    -> from companies c
+    -> join jobs j on c.company_id = j.company_id
+    -> group by c.company_name
+    -> having count(j.job_id) = (
+    ->     select max(job_count)
+    ->     from (
+    ->         select count(job_id) as job_count
+    ->         from jobs
+    ->         group by company_id
+    ->     ) as job_counts
+    -> );
++--------------+-----------+
+| company_name | job_count |
++--------------+-----------+
+| Infosys      |         2 |
+| Wipro        |         2 |
++--------------+-----------+
+2 rows in set (0.00 sec)
+
+
+
+
+
+
+Q.10.Find the applicants who have applied for positions in companies located in 'CityX' and have at
+least 3 years of experience.
+mysql> SELECT a.applicant_id, a.first_name, a.experience
+    -> FROM applicants a
+    -> JOIN applications ap ON a.applicant_id = ap.applicant_id
+    -> JOIN jobs j ON ap.job_id = j.job_id
+    -> JOIN companies c ON j.company_id = c.company_id
+    -> WHERE c.location = 'Chennai' AND a.experience >= 3;
++--------------+------------+------------+
+| applicant_id | first_name | experience |
++--------------+------------+------------+
+|            5 | Jasprit    |          5 |
++--------------+------------+------------+
+1 row in set (0.00 sec)
+
+
+
+Q.11.---Retrieve a list of distinct job titles with salaries between $60,000 and $80,000.
+mysql> SELECT DISTINCT job_title
+    -> FROM jobs
+    -> WHERE salary BETWEEN 60000 AND 80000;
++-------------------+
+| job_title         |
++-------------------+
+| Software Engineer |
+| Project Manager   |
+| Business Analyst  |
++-------------------+
+3 rows in set (0.00 sec)
+
+
+
+
+Q.12.. Find the jobs that have not received any applications.
+mysql> SELECT j.job_id, j.job_title, j.salary, j.job_location
+    -> FROM jobs j
+    -> LEFT JOIN applications a ON j.job_id = a.job_id
+    -> WHERE a.application_id IS NULL;
++--------+------------------+----------+--------------+
+| job_id | job_title        | salary   | job_location |
++--------+------------------+----------+--------------+
+|      6 | Business Analyst | 65000.00 | Bengaluru    |
+|      7 | Intern           |     0.00 | Bengaluru    |
++--------+------------------+----------+--------------+
+2 rows in set (0.00 sec)
+
+
+
+Q.13 Retrieve a list of job applicants along with the companies they have applied to and the positions
+they have applied for.
+mysql> SELECT a.applicant_id,
+    ->        a.first_name,
+    ->        a.last_name,
+    ->        c.company_name,
+    ->        j.job_title
+    -> FROM applicants a
+    -> JOIN applications ap ON a.applicant_id = ap.applicant_id
+    -> JOIN jobs j ON ap.job_id = j.job_id
+    -> JOIN companies c ON j.company_id = c.company_id;
++--------------+------------+-----------+---------------------------+----------------------+
+| applicant_id | first_name | last_name | company_name              | job_title            |
++--------------+------------+-----------+---------------------------+----------------------+
+|            1 | Rohit      | Sharma    | Tata Consultancy services | Software Engineer    |
+|            2 | Virat      | Kohli     | Infosys                   | Data Analyst         |
+|            3 | Shubman    | Gill      | Wipro                     | Project Manager      |
+|            4 | Suryakumar | Yadav     | HCL                       | System Administrator |
+|            5 | Jasprit    | Bumrah    | Hexaware Technologies     | Full Stack Developer |
++--------------+------------+-----------+---------------------------+----------------------+
+5 rows in set (0.00 sec)
+
+
+Q.14. Retrieve a list of companies along with the count of jobs they have posted, even if they have not
+received any applications.
+mysql> SELECT c.company_id,
+    ->        c.company_name,
+    ->        COUNT(j.job_id) AS job_count
+    -> FROM companies c
+    -> LEFT JOIN jobs j ON c.company_id = j.company_id
+    -> GROUP BY c.company_id, c.company_name;
++------------+---------------------------+-----------+
+| company_id | company_name              | job_count |
++------------+---------------------------+-----------+
+|          1 | Tata Consultancy services |         1 |
+|          2 | Infosys                   |         2 |
+|          3 | Wipro                     |         2 |
+|          4 | HCL                       |         1 |
+|          5 | Hexaware Technologies     |         1 |
++------------+---------------------------+-----------+
+5 rows in set (0.00 sec)
+
+Q.15. -----List all applicants along with the companies and positions they have applied for, including those
+who have not applied.
+
+mysql> SELECT a.applicant_id,
+    ->        a.first_name,
+    ->        a.last_name,
+    ->        c.company_name,
+    ->        j.job_title
+    -> FROM applicants a
+    -> LEFT JOIN applications ap ON a.applicant_id = ap.applicant_id
+    -> LEFT JOIN jobs j ON ap.job_id = j.job_id
+    -> LEFT JOIN companies c ON j.company_id = c.company_id;
++--------------+------------+-----------+---------------------------+----------------------+
+| applicant_id | first_name | last_name | company_name              | job_title            |
++--------------+------------+-----------+---------------------------+----------------------+
+|            1 | Rohit      | Sharma    | Tata Consultancy services | Software Engineer    |
+|            2 | Virat      | Kohli     | Infosys                   | Data Analyst         |
+|            3 | Shubman    | Gill      | Wipro                     | Project Manager      |
+|            4 | Suryakumar | Yadav     | HCL                       | System Administrator |
+|            5 | Jasprit    | Bumrah    | Hexaware Technologies     | Full Stack Developer |
++--------------+------------+-----------+---------------------------+----------------------+
+5 rows in set (0.00 sec)
+
+Q.16 ----- Find companies that have posted jobs with a salary higher than the average salary of all jobs.
+
+mysql> SELECT DISTINCT c.company_id, c.company_name
+    -> FROM companies c
+    -> JOIN jobs j ON c.company_id = j.company_id
+    -> WHERE j.salary > (SELECT AVG(salary) FROM jobs);
++------------+---------------------------+
+| company_id | company_name              |
++------------+---------------------------+
+|          1 | Tata Consultancy services |
+|          2 | Infosys                   |
+|          3 | Wipro                     |
++------------+---------------------------+
+3 rows in set (0.00 sec)
+
+
+
+q.17 -----. Display a list of applicants with their names and a concatenated string of their city and state.
+
+mysql> SELECT applicant_id,
+    ->        first_name,
+    ->        last_name,
+    ->        CONCAT(city, ', ', state) AS location
+    -> FROM applicants;
++--------------+------------+-----------+----------------------+
+| applicant_id | first_name | last_name | location             |
++--------------+------------+-----------+----------------------+
+|            1 | Rohit      | Sharma    | Delhi, Delhi         |
+|            2 | Virat      | Kohli     | Mumbai, Maharashtra  |
+|            3 | Shubman    | Gill      | Kolkata, West Bengal |
+|            4 | Suryakumar | Yadav     | Chennai, Tamil Nadu  |
+|            5 | Jasprit    | Bumrah    | Ahmedabad, Gujarat   |
++--------------+------------+-----------+----------------------+
+5 rows in set (0.00 sec)
+
+Q.18.----. Retrieve a list of jobs with titles containing either 'Developer' or 'Engineer'.
+
+mysql> SELECT job_id, job_title, company_id, salary, job_location
+    -> FROM jobs
+    -> WHERE job_title LIKE '%Developer%' OR job_title LIKE '%Engineer%';
++--------+----------------------+------------+----------+--------------+
+| job_id | job_title            | company_id | salary   | job_location |
++--------+----------------------+------------+----------+--------------+
+|      1 | Software Engineer    |          1 | 60000.00 | Mumbai       |
+|      5 | Full Stack Developer |          5 | 25000.00 | Chennai      |
++--------+----------------------+------------+----------+--------------+
+2 rows in set (0.00 sec)
+
+
+Q.19----Retrieve a list of applicants and the jobs they have applied for, including those who have not
+applied and jobs without applicants.
+mysql> SELECT a.applicant_id,
+    ->        a.first_name,
+    ->        a.last_name,
+    ->        j.job_id,
+    ->        j.job_title
+    -> FROM applicants a
+    -> LEFT JOIN applications ap ON a.applicant_id = ap.applicant_id
+    -> LEFT JOIN jobs j ON ap.job_id = j.job_id
+    -> LEFT JOIN companies c ON j.company_id = c.company_id
+    -> ORDER BY a.applicant_id, j.job_id;
++--------------+------------+-----------+--------+----------------------+
+| applicant_id | first_name | last_name | job_id | job_title            |
++--------------+------------+-----------+--------+----------------------+
+|            1 | Rohit      | Sharma    |      1 | Software Engineer    |
+|            2 | Virat      | Kohli     |      2 | Data Analyst         |
+|            3 | Shubman    | Gill      |      3 | Project Manager      |
+|            4 | Suryakumar | Yadav     |      4 | System Administrator |
+|            5 | Jasprit    | Bumrah    |      5 | Full Stack Developer |
++--------------+------------+-----------+--------+----------------------+
+5 rows in set (0.00 sec)
+
+
+Q.20----List all combinations of applicants and companies where the company is in a specific city and the
+applicant has more than 2 years of experience. For example: city=Chennai
+
+
+mysql> SELECT a.applicant_id,
+    ->        a.first_name,
+    ->        a.last_name,
+    ->        c.company_name
+    -> FROM applicants a
+    -> JOIN applications ap ON a.applicant_id = ap.applicant_id
+    -> JOIN jobs j ON ap.job_id = j.job_id
+    -> JOIN companies c ON j.company_id = c.company_id
+    -> WHERE c.location = 'Chennai' AND a.experience > 2;
++--------------+------------+-----------+-----------------------+
+| applicant_id | first_name | last_name | company_name          |
++--------------+------------+-----------+-----------------------+
+|            5 | Jasprit    | Bumrah    | Hexaware Technologies |
++--------------+------------+-----------+-----------------------+
+1 row in set (0.00 sec)
